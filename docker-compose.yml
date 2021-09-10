@@ -1,0 +1,49 @@
+version: '3'
+services:
+
+  #PHP Service
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    image: php:7.3-fpm
+    container_name: mvm_php
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - ./src:/var/www
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/local.ini
+
+  #Nginx Service
+  webserver:
+    image: nginx:alpine
+    container_name: mvm_nginx
+    tty: true
+    ports:
+      - "7059:80"
+      - "7058:443"
+    volumes:
+      - ./src:/var/www
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+
+  #MySQL Service
+  db:
+    image: mysql:5.7.24
+    container_name: mvm_mysql
+    command: "--default-authentication-plugin=mysql_native_password"
+    tty: true
+    ports:
+      - "7057:3306"
+    environment:
+      MYSQL_DATABASE: mvm_ua
+      MYSQL_USER: mvm_ua
+      MYSQL_PASSWORD: mvm_ua_3108
+      MYSQL_ROOT_PASSWORD: mvm_ua_3108_root
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql/
+      - ./docker/mysql/conf/my.cnf:/etc/mysql/my.cnf
